@@ -105,7 +105,11 @@
 
     <!-- Tiles native to System UI. Order should match "quick_settings_tiles_default" -->
     <string name="quick_settings_tiles_stock" translatable="false">
+<<<<<<< HEAD
         wifi,cell,battery,dnd,flashlight,rotation,bt,airplane,nfc,location,hotspot,inversion,saver,work,cast,night,livedisplay,adb_network,ambient_display,caffeine,heads_up,sync,usb_tether,volume_panel,profiles,screenshot,brightness,reboot,ime,sound,key_disabler
+=======
+        wifi,cell,battery,dnd,flashlight,rotation,bt,airplane,nfc,location,hotspot,inversion,saver,work,cast,night,livedisplay,adb_network,ambient_display,caffeine,heads_up,sync,usb_tether,volume_panel,profiles,navigation_bar,pulse,sound
+>>>>>>> d99e930... [DUI] Navigation Bar Tile
     </string>
 
     <!-- The tiles to display in QuickSettings -->

@@ -62,7 +62,11 @@ import com.android.systemui.qs.tiles.LiveDisplayTile;
 import com.android.systemui.qs.tiles.LocationTile;
 import com.android.systemui.qs.tiles.NfcTile;
 import com.android.systemui.qs.tiles.NightDisplayTile;
+<<<<<<< HEAD
 import com.android.systemui.qs.tiles.RebootTile;
+=======
+import com.android.systemui.qs.tiles.NavigationBarTile;
+>>>>>>> d99e930... [DUI] Navigation Bar Tile
 import com.android.systemui.qs.tiles.RotationLockTile;
 import com.android.systemui.qs.tiles.ScreenshotTile;
 import com.android.systemui.qs.tiles.SoundTile;
@@ -473,7 +477,11 @@ public class QSTileHost implements QSTile.Host, Tunable {
         else if (tileSpec.equals("sync")) return new SyncTile(this);
         else if (tileSpec.equals("usb_tether")) return new UsbTetherTile(this);
         else if (tileSpec.equals("volume_panel")) return new VolumeTile(this);
+<<<<<<< HEAD
         else if (tileSpec.equals("key_disabler")) return new KeyDisablerTile(this);
+=======
+        else if (tileSpec.equals("navigation_bar")) return new NavigationBarTile(this);
+>>>>>>> d99e930... [DUI] Navigation Bar Tile
         // Intent tiles.
         else if (tileSpec.startsWith(IntentTile.PREFIX)) return IntentTile.create(this,tileSpec);
         else if (tileSpec.startsWith(CustomTile.PREFIX)) return CustomTile.create(this,tileSpec);
