@@ -41,6 +41,9 @@ import com.android.systemui.statusbar.policy.NetworkController.SignalCallback;
 public class CellularTile extends QSTile<QSTile.SignalState> {
     static final Intent CELLULAR_SETTINGS = new Intent().setComponent(new ComponentName(
             "com.android.settings", "com.android.settings.Settings$DataUsageSummaryActivity"));
+    private static final Intent MOBILE_NETWORK_SETTINGS = new Intent(Intent.ACTION_MAIN)
+            .setComponent(new ComponentName("com.android.phone",
+                    "com.android.phone.MobileNetworkSettings"));
 
     private final NetworkController mController;
     private final DataUsageController mDataController;
@@ -89,6 +92,31 @@ public class CellularTile extends QSTile<QSTile.SignalState> {
         MetricsLogger.action(mContext, getMetricsCategory());
         if (mDataController.isMobileDataSupported()) {
             showDetail(true);
+            if(mController.isAdvancedDataTileEnabled()) {
+		boolean enabled = mDataController.isMobileDataEnabled();
+		if (!enabled) {
+		    mDataController.setMobileDataEnabled(true);
+        	} else {
+        	    mDataController.setMobileDataEnabled(false);
+	        }
+            } else {
+                showDetail(true);
+            }
+        } else {
+            mHost.startActivityDismissingKeyguard(CELLULAR_SETTINGS);
+        }
+    }
+
+    @Override
+    protected void handleLongClick() {
+        MetricsLogger.action(mContext, getMetricsCategory());
+        if(mController.isAdvancedDataTileEnabled()) {
+            if (mDataController.isMobileDataSupported()) {
+                showDetail(true);
+            } else {
+                mHost.startActivityDismissingKeyguard(CELLULAR_SETTINGS);
+            }
+
         } else {
             mHost.startActivityDismissingKeyguard(CELLULAR_SETTINGS);
         }
@@ -260,7 +288,7 @@ public class CellularTile extends QSTile<QSTile.SignalState> {
 
         @Override
         public Intent getSettingsIntent() {
-            return CELLULAR_SETTINGS;
+            return MOBILE_NETWORK_SETTINGS;
         }
 
         @Override
