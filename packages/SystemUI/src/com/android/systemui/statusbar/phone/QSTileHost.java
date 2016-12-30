@@ -66,7 +66,11 @@ import com.android.systemui.qs.tiles.NightDisplayTile;
 import com.android.systemui.qs.tiles.RebootTile;
 =======
 import com.android.systemui.qs.tiles.NavigationBarTile;
+<<<<<<< HEAD
 >>>>>>> d99e930... [DUI] Navigation Bar Tile
+=======
+import com.android.systemui.qs.tiles.PulseTile;
+>>>>>>> 2607aeb... [DUI] QS: Add Pulse Visualizer Tile
 import com.android.systemui.qs.tiles.RotationLockTile;
 import com.android.systemui.qs.tiles.ScreenshotTile;
 import com.android.systemui.qs.tiles.SoundTile;
@@ -481,7 +485,11 @@ public class QSTileHost implements QSTile.Host, Tunable {
         else if (tileSpec.equals("key_disabler")) return new KeyDisablerTile(this);
 =======
         else if (tileSpec.equals("navigation_bar")) return new NavigationBarTile(this);
+<<<<<<< HEAD
 >>>>>>> d99e930... [DUI] Navigation Bar Tile
+=======
+        else if (tileSpec.equals("pulse")) return new PulseTile(this);
+>>>>>>> 2607aeb... [DUI] QS: Add Pulse Visualizer Tile
         // Intent tiles.
         else if (tileSpec.startsWith(IntentTile.PREFIX)) return IntentTile.create(this,tileSpec);
         else if (tileSpec.startsWith(CustomTile.PREFIX)) return CustomTile.create(this,tileSpec);
