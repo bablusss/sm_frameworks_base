@@ -1869,6 +1869,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                     | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
                     | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+                    | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
                     | WindowManager.LayoutParams.FLAG_SLIPPERY,
                 PixelFormat.TRANSLUCENT);
         // this will allow the navbar to run in an overlay on devices that support this
@@ -3363,11 +3364,14 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         mExpandedVisible = false;
 <<<<<<< HEAD
+<<<<<<< HEAD
         enableShake(false);
 =======
         if (mNavigationController.getBar() != null)
             mNavigationController.getBar().setSlippery(false);
 >>>>>>> 399bd16... [DUI] Initial DUI checkin for N
+=======
+>>>>>>> 55bcdab... [DUI] Fix DUI slippery flag logic and IllegalArgumentException [2/2]
         visibilityChanged(false);
 
         // Shrink the window to the size of the status bar only
