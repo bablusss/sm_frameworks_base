@@ -642,10 +642,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
 
         void observe() {
-            ContentResolver resolver = mContext.getContentResolver();
-            resolver.registerContentObserver(CMSettings.Global.getUriFor(
-                    CMSettings.Global.DEV_FORCE_SHOW_NAVBAR), false, this, UserHandle.USER_ALL);
-
             CurrentUserTracker userTracker = new CurrentUserTracker(mContext) {
                 @Override
                 public void onUserSwitched(int newUserId) {
