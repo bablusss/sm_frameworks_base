@@ -225,7 +225,7 @@ public class StatusBarWindowView extends FrameLayout implements TunerService.Tun
             setLayoutParams(lp);
             WindowManagerGlobal.getInstance().changeCanvasOpacity(windowToken, true);
             setWillNotDraw(false);
-        } {
+        } else {
             setWillNotDraw(!DEBUG);
         }
     }
@@ -266,7 +266,7 @@ public class StatusBarWindowView extends FrameLayout implements TunerService.Tun
                     MediaSessionLegacyHelper.getHelper(mContext).sendVolumeKeyEvent(event, true);
                     return true;
                 }
-            
+                
         }
         return false;
     }

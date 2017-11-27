@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2006 The Android Open Source Project
+/**
+ *Copyright (C) 2006 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -282,12 +282,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private static final int KEY_ACTION_LAUNCH_CAMERA = 6;
     private static final int KEY_ACTION_SLEEP = 7;
     private static final int KEY_ACTION_LAST_APP = 8;
-    private static final int KEY_ACTION_SCREENSHOT = 9;
-    private static final int KEY_ACTION_REBOOT = 10;
-    private static final int KEY_ACTION_SPLIT_SCREEN = 11;
-    private static final int KEY_ACTION_SINGLE_HAND_LEFT = 12;
-    private static final int KEY_ACTION_SINGLE_HAND_RIGHT = 13;
-    private static final int KEY_ACTION_GO_HOME = 14;
+    private static final int KEY_ACTION_SPLIT_SCREEN = 9;
+    private static final int KEY_ACTION_SINGLE_HAND_LEFT = 10;
+    private static final int KEY_ACTION_SINGLE_HAND_RIGHT = 11;
 
     // Masks for checking presence of hardware keys.
     // Must match values in core/res/res/values/config.xml
@@ -570,7 +567,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mTranslucentDecorEnabled = true;
     boolean mUseTvRouting;
     int mBackKillTimeout;
-    int mCustomBackKillTimeout;
 
     int mDeviceHardwareKeys;
 
@@ -703,12 +699,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mForcingShowNavBar;
     int mForcingShowNavBarLayer;
 
-<<<<<<< HEAD
-    int mDevForceNavbar = -1;
-=======
     // User defined bar visibility, regardless of factory configuration
     boolean mNavbarVisible = false;
->>>>>>> bcc6e1d... [DUI] Fix up disabling HW buttons when navbar is enabled
 
     // States of keyguard dismiss.
     private static final int DISMISS_KEYGUARD_NONE = 0; // Keyguard not being dismissed.
@@ -858,7 +850,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mHavePendingMediaKeyRepeatWithWakeLock;
 
     private int mCurrentUserId;
-    private boolean haveEnableGesture = false;
 
     // Maps global key codes to the components that will handle them.
     private GlobalKeyManager mGlobalKeyManager;
@@ -1046,9 +1037,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.END_BUTTON_BEHAVIOR), false, this,
                     UserHandle.USER_ALL);
-	    resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.THREE_FINGER_GESTURE), false, this,
-                    UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.Secure.getUriFor(
                     Settings.Secure.INCALL_POWER_BUTTON_BEHAVIOR), false, this,
                     UserHandle.USER_ALL);
@@ -1066,9 +1054,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.Secure.getUriFor(
                     Settings.Secure.WAKE_GESTURE_ENABLED), false, this,
-                    UserHandle.USER_ALL);
-             resolver.registerContentObserver(Settings.Secure.getUriFor(
-                    Settings.Secure.KILL_APP_LONGPRESS_TIMEOUT), false, this,
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.ACCELEROMETER_ROTATION), false, this,
@@ -1233,7 +1218,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private ImmersiveModeConfirmation mImmersiveModeConfirmation;
 
     private SystemGesturesPointerEventListener mSystemGestures;
-    private OPGesturesListener mOPGestures;
 
     IStatusBarService getStatusBarService() {
         synchronized (mServiceAquireLock) {
@@ -1661,7 +1645,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     private void powerLongPress() {
-        final int behavior = mResolvedLongPressOnPowerBehavior;
+        int behavior = mResolvedLongPressOnPowerBehavior;
         switch (behavior) {
         case LONG_PRESS_POWER_NOTHING:
             break;
@@ -1670,8 +1654,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             if (!performHapticFeedbackLw(null, HapticFeedbackConstants.LONG_PRESS, false)) {
                 performAuditoryFeedbackForAccessibilityIfNeed();
             }
-            showGlobalActionsInternal();
-            break;
+            boolean locked = isStatusBarKeyguard() && isKeyguardSecure(mCurrentUserId);
         case LONG_PRESS_POWER_SHUT_OFF:
         case LONG_PRESS_POWER_SHUT_OFF_NO_CONFIRM:
             mPowerKeyHandled = true;
@@ -1992,12 +1975,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case KEY_ACTION_LAST_APP:
                 ActionUtils.switchToLastApp(mContext, mCurrentUserId);
                 break;
-            case KEY_ACTION_SCREENSHOT:
-                mHandler.postDelayed(mScreenshotRunnable, getScreenshotChordLongPressDelay());
-                break;
-            case KEY_ACTION_REBOOT:
-                showGlobalActions();
-                break; 
             case KEY_ACTION_SPLIT_SCREEN:
                 toggleSplitScreen();
                 break;
@@ -2007,9 +1984,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case KEY_ACTION_SINGLE_HAND_RIGHT:
                 toggleSingleHand(mContext, false);
                 break;
-	    case KEY_ACTION_GO_HOME:
-		launchHomeFromHotKey();
-		break;
             default:
                 break;
          }
@@ -2044,13 +2018,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mAppOpsManager = (AppOpsManager) mContext.getSystemService(Context.APP_OPS_SERVICE);
         mHasFeatureWatch = mContext.getPackageManager().hasSystemFeature(FEATURE_WATCH);
         mAlarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
-
-        mOPGestures = new OPGesturesListener(context, new OPGesturesListener.Callbacks() {
-                   @Override
-                    public void onSwipeThreeFinger() {
-                        mHandler.post(mScreenshotRunnable);
-                    }
-                });
 
         // Init display burn-in protection
         boolean burnInProtectionEnabled = context.getResources().getBoolean(
@@ -2376,26 +2343,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         context.registerReceiver(torchReceiver, filter);
     }
 
-    private void enableSwipeThreeFingerGesture(boolean enable){
-        if (enable) {
-            if (haveEnableGesture) return;
-            haveEnableGesture = true;
-            mWindowManagerFuncs.registerPointerEventListener(mOPGestures);
-        } else {
-	    if (!haveEnableGesture) return;
-            haveEnableGesture = false;
-            mWindowManagerFuncs.unregisterPointerEventListener(mOPGestures);
-        }
-    }
-
     private void updateKeyAssignments() {
         int activeHardwareKeys = mDeviceHardwareKeys;
 
-<<<<<<< HEAD
-        if (mDevForceNavbar == 1) {
-=======
         if (mNavbarVisible) {
->>>>>>> bcc6e1d... [DUI] Fix up disabling HW buttons when navbar is enabled
             activeHardwareKeys = 0;
         }
         final boolean hasMenu = (activeHardwareKeys & KEY_MASK_MENU) != 0;
@@ -2607,8 +2558,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mTorchLongPressPowerEnabled = CMSettings.System.getIntForUser(
                     resolver, CMSettings.System.TORCH_LONG_PRESS_POWER_GESTURE, 0,
                     UserHandle.USER_CURRENT) == 1;
-            mCustomBackKillTimeout = Settings.Secure.getIntForUser(resolver,
-                    Settings.Secure.KILL_APP_LONGPRESS_TIMEOUT, mBackKillTimeout, UserHandle.USER_CURRENT);
             mTorchTimeout = CMSettings.System.getIntForUser(
                     resolver, CMSettings.System.TORCH_LONG_PRESS_POWER_TIMEOUT, 0,
                     UserHandle.USER_CURRENT);
@@ -2655,14 +2604,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 updateWakeGestureListenerLp();
             }
 
-<<<<<<< HEAD
-            int devForceNavbar = CMSettings.Global.getIntForUser(resolver,
-                    CMSettings.Global.DEV_FORCE_SHOW_NAVBAR, 0, UserHandle.USER_CURRENT);
-            if (devForceNavbar != mDevForceNavbar) {
-                mDevForceNavbar = devForceNavbar;
-                if (mCMHardware.isSupported(CMHardwareManager.FEATURE_KEY_DISABLE)) {
-                    mCMHardware.set(CMHardwareManager.FEATURE_KEY_DISABLE, mDevForceNavbar == 1);
-=======
             boolean doShowNavbar = Settings.Secure.getIntForUser(resolver,
                     Settings.Secure.NAVIGATION_BAR_VISIBLE,
                     DUActionUtils.hasNavbarByDefault(mContext) ? 1 : 0,
@@ -2671,7 +2612,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mNavbarVisible = doShowNavbar;
                 if (mCMHardware.isSupported(CMHardwareManager.FEATURE_KEY_DISABLE)) {
                     mCMHardware.set(CMHardwareManager.FEATURE_KEY_DISABLE, mNavbarVisible);
->>>>>>> bcc6e1d... [DUI] Fix up disabling HW buttons when navbar is enabled
                 }
             }
 
@@ -2699,11 +2639,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
             mUserRotationAngles = Settings.System.getInt(resolver,
                     Settings.System.ACCELEROMETER_ROTATION_ANGLES, -1);
-
-	     //Three Finger Gesture
-            boolean threeFingerGesture = Settings.System.getIntForUser(resolver,
-                    Settings.System.THREE_FINGER_GESTURE, 0, UserHandle.USER_CURRENT) == 1;
-            enableSwipeThreeFingerGesture(threeFingerGesture);
 
             if (mSystemReady) {
                 int pointerLocation = Settings.System.getIntForUser(resolver,
@@ -3021,58 +2956,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         || attrs.hideTimeoutMilliseconds > TOAST_WINDOW_TIMEOUT) {
                     attrs.hideTimeoutMilliseconds = TOAST_WINDOW_TIMEOUT;
                 }
-
-                switch(Settings.System.getInt(mContext.getContentResolver(), Settings.System.TOAST_ANIMATION, 1)) {
-                case 0:
-                        attrs.windowAnimations = -1;
-                        break;
-                case 1:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast;
-                        break;
-                case 2:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast_Fade;
-                        break;
-                case 3:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast_SlideRight;
-                        break;
-                case 4:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast_SlideLeft;
-                        break;
-                case 5:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast_Xylon;
-                        break;
-                case 6:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast_Toko;
-                        break;
-                case 7:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast_Tn;
-                        break;
-                case 8:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast_Honami;
-                        break;
-                case 9:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast_FastFade;
-                        break;
-                case 10:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast_GrowFade;
-                        break;
-                case 11:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast_GrowFadeCenter;
-                        break;
-                case 12:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast_GrowFadeBottom;
-                        break;
-                case 13:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast_Translucent;
-                        break;
-                case 14:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast_SlideLeftRight;
-                        break;
-                case 15:
-                        attrs.windowAnimations = com.android.internal.R.style.Animation_Toast_SlideRightLeft;
-                        break;
+                attrs.windowAnimations = com.android.internal.R.style.Animation_Toast;
+                break;
         }
-    }
 
         if (attrs.type != TYPE_STATUS_BAR) {
             // The status bar is the only window allowed to exhibit keyguard behavior.
@@ -4283,7 +4169,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             if (unpinActivity(true) || CMSettings.Secure.getInt(mContext.getContentResolver(),
                     CMSettings.Secure.KILL_APP_LONGPRESS_BACK, 0) == 1) {
                 if (down && repeatCount == 0) {
-                    mHandler.postDelayed(mBackLongPress, mCustomBackKillTimeout);
+                    mHandler.postDelayed(mBackLongPress, mBackKillTimeout);
                 }
             }
         }
@@ -9187,11 +9073,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     // overridden by qemu.hw.mainkeys in the emulator.
     @Override
     public boolean hasNavigationBar() {
-<<<<<<< HEAD
-        return mHasNavigationBar || mDevForceNavbar == 1;
-=======
         return mNavbarVisible;
->>>>>>> 6f3530b... [DUI] Fixed up various cherry-pick issues
     }
 
     public boolean needsNavigationBar() {
