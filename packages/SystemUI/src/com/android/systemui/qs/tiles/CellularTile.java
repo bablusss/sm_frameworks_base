@@ -92,14 +92,14 @@ public class CellularTile extends QSTile<QSTile.SignalState> {
         MetricsLogger.action(mContext, getMetricsCategory());
         if (mDataController.isMobileDataSupported()) {
             showDetail(true);
-            if(mController.isAdvancedDataTileEnabled()) {
+               {
 		boolean enabled = mDataController.isMobileDataEnabled();
 		if (!enabled) {
 		    mDataController.setMobileDataEnabled(true);
         	} else {
         	    mDataController.setMobileDataEnabled(false);
 	        }
-            } else {
+            }  {
                 showDetail(true);
             }
         } else {
@@ -110,14 +110,14 @@ public class CellularTile extends QSTile<QSTile.SignalState> {
     @Override
     protected void handleLongClick() {
         MetricsLogger.action(mContext, getMetricsCategory());
-        if(mController.isAdvancedDataTileEnabled()) {
+           {
             if (mDataController.isMobileDataSupported()) {
                 showDetail(true);
             } else {
                 mHost.startActivityDismissingKeyguard(CELLULAR_SETTINGS);
             }
 
-        } else {
+        } {
             mHost.startActivityDismissingKeyguard(CELLULAR_SETTINGS);
         }
     }
